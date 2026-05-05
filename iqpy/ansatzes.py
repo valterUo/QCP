@@ -25,7 +25,7 @@ def nearest_neighbour_IQP_ansatz(n_qubits):
     return gates
 
 
-def fully_connected_IQP_ansatz(n_qubits):
+def fully_connected_IQP_ansatz(n_qubits, max_weight=2):
     """
     Fully-connected IQP ansatz.
 
@@ -37,14 +37,18 @@ def fully_connected_IQP_ansatz(n_qubits):
     """
     gates = []
 
+    for weight in range(1, max_weight + 1):
+        for combo in itertools.combinations(range(n_qubits), weight):
+            gates.append([list(combo)])
+
     # Single-qubit Z terms
-    for i in range(n_qubits):
-        gates.append([[i]])
+    #for i in range(n_qubits):
+    #    gates.append([[i]])
 
     # Fully-connected ZZ interactions
-    for i in range(n_qubits):
-        for j in range(i + 1, n_qubits):
-            gates.append([[i, j]])
+    #for i in range(n_qubits):
+    #    for j in range(i + 1, n_qubits):
+    #        gates.append([[i, j]])
 
     return gates
 

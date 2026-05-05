@@ -8,3 +8,4 @@ iqpopt/
 .venv/
 venv/
 iqpopt/
+topology_hardness_exploration.ipynb

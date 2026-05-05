@@ -119,7 +119,7 @@ def expvals_torch(
         return_samples=return_samples,
     )
 
-
+# Corresponds to https://github.com/XanaduAI/iqpopt/blob/bf207502c317364746bd56ae0dd1b4d04e492c7b/src/iqpopt/gen_qml/iqp_methods.py#L11
 def mmd_loss_torch(params, circuit, ground_truth, ops, n_samples=1000, init_coefs=None):
     expval_samples = ExpvalFunction.apply(
         params,

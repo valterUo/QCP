@@ -173,11 +173,17 @@ class IqpCircuitQiskit:
         for i in range(self.n_qubits):
             qc.h(i)
 
-        # ZZ decomposition
-        def apply_zz(i, j, theta):
-            qc.cx(i, j)
-            qc.rz(2 * theta, j)
-            qc.cx(i, j)
+        # General multi-qubit Pauli-Z rotation: e^{-i*theta * Z_{q0}...Z_{qk-1}}
+        # Decomposed as: cascade CX onto target, RZ(2*theta), reverse cascade CX.
+        # For 1 qubit: just RZ(2*theta). For 2 qubits: CX(i,j), RZ, CX(i,j). Etc.
+        def apply_pauli_z_rotation(qubits, theta):
+            target = qubits[-1]
+            controls = qubits[:-1]
+            for ctrl in controls:
+                qc.cx(ctrl, target)
+            qc.rz(2 * theta, target)
+            for ctrl in reversed(controls):
+                qc.cx(ctrl, target)
 
         # Initial gates
         if self.init_gates is not None:
@@ -185,34 +191,12 @@ class IqpCircuitQiskit:
                 raise ValueError("init_coefs must be provided if init_gates are used")
 
             for par, gate in zip(init_coefs, self.init_gates):
-                qubits = gate[0]
-
-                if len(qubits) == 1:
-                    qc.rz(2 * par, qubits[0])
-
-                elif len(qubits) == 2:
-                    apply_zz(qubits[0], qubits[1], par)
-
-                else:
-                    raise ValueError(
-                        "Hardware-efficient version supports only 1- and 2-qubit gates"
-                    )
+                apply_pauli_z_rotation(gate[0], par)
 
         # Trainable gates
         # Loop over each gate in the ansatz and its corresponding parameter
         for par, gate in zip(params, self.gates):
-            qubits = gate[0]
-
-            if len(qubits) == 1:
-                qc.rz(2 * par, qubits[0])
-
-            elif len(qubits) == 2:
-                apply_zz(qubits[0], qubits[1], par)
-
-            else:
-                raise ValueError(
-                    "Hardware-efficient version supports only 1- and 2-qubit gates"
-                )
+            apply_pauli_z_rotation(gate[0], par)
 
         # Final Hadamards
         for i in range(self.n_qubits):
